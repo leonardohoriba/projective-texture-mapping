@@ -89,7 +89,7 @@ def insertTexture(
 
 if __name__ == "__main__":
     TEXTURE_PATH = "storage/german_cano.jpg"
-    IMAGE_PATH = "storage/caique.jpeg"
+    IMAGE_PATH = "storage/caique.JPG"
     IMAGE_TARGET = [(251, 693, 1), (553, 681, 1), (264, 887, 1), (532, 877, 1)]
 
     insertTexture(
