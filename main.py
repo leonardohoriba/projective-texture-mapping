@@ -30,8 +30,8 @@ def insertTexture(
     texture = Image.open(texture_path)
     img = Image.open(image_path)
 
-    (x_t, y_t) = texture.size
-    (x_i, y_i) = img.size
+    x_t, y_t = texture.size
+    x_i, y_i = img.size
 
     # Texture points
     texture_coordinates = [(0, 0, 1), (x_t, 0, 1), (0, y_t, 1), (x_t, y_t, 1)]
@@ -40,9 +40,9 @@ def insertTexture(
     image_coordinates = image_target
 
     # Construindo a matriz A usada no sistema:
-    # A.t = B ----> t tem como coordenadas as entradas da transformacao
-    A = np.array([[0 for x in range(12)] for y in range(12)])
-    B = np.array([0 for x in range(12)])
+    # Utilizando de que A.t = B, podemos calcular t 
+    A = np.zeros((12,12), dtype=int)
+    B = np.zeros((12), dtype=int)
 
     for i in range(0, 3):
         B[i] = image_coordinates[0][i]
@@ -52,7 +52,7 @@ def insertTexture(
             A[3 * i][j] = A[3 * i + 1][j + 3] = A[3 * i + 2][
                 j + 6
             ] = texture_coordinates[i][j]
-        if i > 0:
+    for i in range(1,4):
             A[3 * i][8 + i] = -image_coordinates[i][0]
             A[3 * i + 1][8 + i] = -image_coordinates[i][1]
             A[3 * i + 2][8 + i] = -image_coordinates[i][2]
@@ -60,7 +60,8 @@ def insertTexture(
     # Resolvendo o sistema para achar T
     # A.t = B ----> t = inv(A).B
     t = np.linalg.inv(A).dot(B)
-    T = np.array([[t[3 * j + i] for i in range(3)] for j in range(3)])
+    aux = t[0:9]
+    T =  np.reshape(aux, (3, 3))
 
     # Calculo a Inversa
     Tinv = np.linalg.inv(T)
@@ -68,14 +69,15 @@ def insertTexture(
     # Percorrer a figura de destino e cola o pixel no lugar correspondente
     for a in range(x_i):
         for b in range(y_i):
-            v = (a, b, 1)
+            v = [a,b,1]
+        
+   
+            # Calculo da transformação inversa
+            i = np.matmul(Tinv[0],v)
+            j = np.matmul(Tinv[1],v)
+            k = np.matmul(Tinv[2],v)
 
-            # Calculo do produto Tinv.v
-            i = Tinv[0][0] * v[0] + Tinv[0][1] * v[1] + Tinv[0][2] * v[2]
-            j = Tinv[1][0] * v[0] + Tinv[1][1] * v[1] + Tinv[1][2] * v[2]
-            k = Tinv[2][0] * v[0] + Tinv[2][1] * v[1] + Tinv[2][2] * v[2]
-
-            # Normalizacao da ultima coordenada para 1
+            # Normalizando a coordenada z
             i = int(i / k)
             j = int(j / k)
 
